@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 
-const apiBaseUrl = process.env.REACT_APP_API_URL || '';
-
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [status, setStatus] = useState('');
@@ -12,7 +10,7 @@ function App() {
   const [editingName, setEditingName] = useState('');
 
   const loadDocuments = async () => {
-    const response = await fetch(`${apiBaseUrl}/documents`);
+    const response = await fetch(`/documents`);
     const data = await response.json();
     setDocuments(Array.isArray(data) ? data : []);
   };
@@ -54,7 +52,7 @@ function App() {
       setIsUploading(true);
       setStatus('Uploading file...');
 
-      const response = await fetch(`${apiBaseUrl}/documents`, {
+      const response = await fetch(`/documents`, {
         method: 'POST',
         body: formData,
       });
@@ -76,7 +74,7 @@ function App() {
   };
 
   const handleDelete = async (id) => {
-    const response = await fetch(`${apiBaseUrl}/documents/${id}`, {
+    const response = await fetch(`/documents/${id}`, {
       method: 'DELETE',
     });
     const data = await response.json();
@@ -91,7 +89,7 @@ function App() {
   };
 
   const handleUpdate = async (id) => {
-    const response = await fetch(`${apiBaseUrl}/documents/${id}`, {
+    const response = await fetch(`/documents/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
