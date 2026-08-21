@@ -23,6 +23,16 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadDocuments().catch(() => {
+        // Keep polling quiet; the main status area is enough for user actions.
+      });
+    }, 4000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const handleFileChange = (event) => {
     const file = event.target.files?.[0] ?? null;
     setSelectedFile(file);
@@ -158,6 +168,7 @@ function App() {
                     )}
                     <span>{document.contentType}</span>
                     <span>{Math.round(document.size / 1024)} KB</span>
+                    <span>Status: {document.status}</span>
                   </div>
 
                   <div className="document-actions">

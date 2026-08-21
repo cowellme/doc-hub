@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"go-teacher/backend/internal/domain"
 )
@@ -21,6 +22,7 @@ type documentRepository interface {
 	GetByID(ctx context.Context, id int64) (domain.Document, error)
 	Update(ctx context.Context, id int64, fileName string) (domain.Document, error)
 	Delete(ctx context.Context, id int64) (domain.Document, error)
+	UpdateStatus(ctx context.Context, id int64, status string) error
 }
 
 type fileStorage interface {
@@ -64,12 +66,15 @@ func (s *DocumentService) Upload(ctx context.Context, file multipart.File, heade
 		Extension:    ext,
 		Size:         size,
 		StoragePath:  storagePath,
+		Status:       "uploaded",
 	}
 
 	createdDocument, err := s.repository.Create(ctx, document)
 	if err != nil {
 		return domain.Document{}, ErrInternal
 	}
+
+	go s.processDocumentAsync(createdDocument.ID)
 
 	return createdDocument, nil
 }
@@ -138,4 +143,12 @@ func mapRepositoryError(err error) error {
 	}
 
 	return ErrInternal
+}
+
+func (s *DocumentService) processDocumentAsync(documentID int64) {
+	time.Sleep(3 * time.Second)
+
+	if err := s.repository.UpdateStatus(context.Background(), documentID, "processed"); err != nil {
+		return
+	}
 }

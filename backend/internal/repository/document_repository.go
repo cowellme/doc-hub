@@ -26,9 +26,10 @@ func (r *DocumentRepository) Create(ctx context.Context, document domain.Documen
 			content_type,
 			extension,
 			size,
-			storage_path
-		) VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id, created_at
+			storage_path,
+			status
+		) VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id, status, created_at
 	`
 
 	err := r.db.QueryRowContext(
@@ -40,7 +41,8 @@ func (r *DocumentRepository) Create(ctx context.Context, document domain.Documen
 		document.Extension,
 		document.Size,
 		document.StoragePath,
-	).Scan(&document.ID, &document.CreatedAt)
+		document.Status,
+	).Scan(&document.ID, &document.Status, &document.CreatedAt)
 	if err != nil {
 		return domain.Document{}, err
 	}
@@ -50,7 +52,7 @@ func (r *DocumentRepository) Create(ctx context.Context, document domain.Documen
 
 func (r *DocumentRepository) List(ctx context.Context) ([]domain.Document, error) {
 	rows, err := r.db.QueryContext(ctx, `
-		SELECT id, original_name, stored_name, content_type, extension, size, storage_path, created_at
+		SELECT id, original_name, stored_name, content_type, extension, size, storage_path, status, created_at
 		FROM documents
 		ORDER BY created_at DESC
 	`)
@@ -70,6 +72,7 @@ func (r *DocumentRepository) List(ctx context.Context) ([]domain.Document, error
 			&document.Extension,
 			&document.Size,
 			&document.StoragePath,
+			&document.Status,
 			&document.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -85,7 +88,7 @@ func (r *DocumentRepository) GetByID(ctx context.Context, id int64) (domain.Docu
 	var document domain.Document
 
 	err := r.db.QueryRowContext(ctx, `
-		SELECT id, original_name, stored_name, content_type, extension, size, storage_path, created_at
+		SELECT id, original_name, stored_name, content_type, extension, size, storage_path, status, created_at
 		FROM documents
 		WHERE id = $1
 	`, id).Scan(
@@ -96,6 +99,7 @@ func (r *DocumentRepository) GetByID(ctx context.Context, id int64) (domain.Docu
 		&document.Extension,
 		&document.Size,
 		&document.StoragePath,
+		&document.Status,
 		&document.CreatedAt,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -118,7 +122,7 @@ func (r *DocumentRepository) Update(ctx context.Context, id int64, fileName stri
 		UPDATE documents
 		SET original_name = $2
 		WHERE id = $1
-		RETURNING id, original_name, stored_name, content_type, extension, size, storage_path, created_at
+		RETURNING id, original_name, stored_name, content_type, extension, size, storage_path, status, created_at
 	`, id, fileName).Scan(
 		&document.ID,
 		&document.OriginalName,
@@ -127,6 +131,7 @@ func (r *DocumentRepository) Update(ctx context.Context, id int64, fileName stri
 		&document.Extension,
 		&document.Size,
 		&document.StoragePath,
+		&document.Status,
 		&document.CreatedAt,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -159,4 +164,25 @@ func (r *DocumentRepository) Delete(ctx context.Context, id int64) (domain.Docum
 	}
 
 	return document, nil
+}
+
+func (r *DocumentRepository) UpdateStatus(ctx context.Context, id int64, status string) error {
+	result, err := r.db.ExecContext(ctx, `
+		UPDATE documents
+		SET status = $2
+		WHERE id = $1
+	`, id, status)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return ErrDocumentNotFound
+	}
+
+	return nil
 }

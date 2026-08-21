@@ -11,7 +11,7 @@ func OpenPostgres(dsn string) (*sql.DB, error) {
 }
 
 func RunMigrations(db *sql.DB) error {
-	query := `
+	createTableQuery := `
 		CREATE TABLE IF NOT EXISTS documents (
 			id BIGSERIAL PRIMARY KEY,
 			original_name TEXT NOT NULL,
@@ -20,10 +20,20 @@ func RunMigrations(db *sql.DB) error {
 			extension TEXT NOT NULL,
 			size BIGINT NOT NULL,
 			storage_path TEXT NOT NULL,
+			status TEXT NOT NULL DEFAULT 'uploaded',
 			created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		)
 	`
 
-	_, err := db.Exec(query)
+	if _, err := db.Exec(createTableQuery); err != nil {
+		return err
+	}
+
+	alterStatusQuery := `
+		ALTER TABLE documents
+		ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'uploaded'
+	`
+
+	_, err := db.Exec(alterStatusQuery)
 	return err
 }

@@ -109,6 +109,7 @@ func toUploadResponse(document domain.Document, message string) domain.UploadRes
 		ContentType:    document.ContentType,
 		Size:           document.Size,
 		StoragePath:    document.StoragePath,
+		Status:         document.Status,
 		Message:        message,
 		UploadedAt:     document.CreatedAt,
 	}

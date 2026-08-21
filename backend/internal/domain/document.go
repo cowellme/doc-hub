@@ -9,6 +9,7 @@ type UploadResponse struct {
 	ContentType    string    `json:"contentType"`
 	Size           int64     `json:"size"`
 	StoragePath    string    `json:"storagePath"`
+	Status         string    `json:"status"`
 	Message        string    `json:"message"`
 	UploadedAt     time.Time `json:"uploadedAt"`
 }
@@ -29,6 +30,7 @@ type Document struct {
 	Extension    string
 	Size         int64
 	StoragePath  string
+	Status       string
 	CreatedAt    time.Time
 }
 
