@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: doc-hub-postgres
+    environment:
+      POSTGRES_DB: doc_hub
+      POSTGRES_USER: doc_hub_user
+      POSTGRES_PASSWORD: doc_hub_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U doc_hub_user -d doc_hub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: doc-hub-backend
+    environment:
+      PORT: 8080
+      UPLOAD_DIR: /app/uploads
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: doc_hub
+      DB_USER: doc_hub_user
+      DB_PASSWORD: doc_hub_password
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: doc-hub-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:8080
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  backend_uploads:
