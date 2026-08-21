@@ -2,24 +2,24 @@ openapi: 3.0.3
 info:
   title: Doc Hub API
   version: 1.0.0
-  description: API for uploading, storing, viewing, updating, and deleting documents.
+  description: Документация АПИ 
 servers:
-  - url: http://localhost:8080
+  - url: /
 paths:
   /hello:
     get:
-      summary: Health greeting
+      summary: Проверка работы
       tags: [System]
       responses:
         '200':
-          description: Greeting response
+          description: Работает)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/MessageResponse'
   /documents:
     get:
-      summary: List documents
+      summary: Все документы
       tags: [Documents]
       responses:
         '200':
@@ -31,7 +31,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/DocumentResponse'
     post:
-      summary: Upload document
+      summary: Загрузка документа
       tags: [Documents]
       requestBody:
         required: true
@@ -46,13 +46,13 @@ paths:
                   format: binary
       responses:
         '201':
-          description: Document uploaded
+          description: Докумен загружен
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocumentResponse'
         '400':
-          description: Invalid file
+          description: Не правильный файл
           content:
             application/json:
               schema:
@@ -66,7 +66,7 @@ paths:
           type: integer
           format: int64
     get:
-      summary: Get document by id
+      summary: Получить документ по ID
       tags: [Documents]
       responses:
         '200':
@@ -76,13 +76,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/DocumentResponse'
         '404':
-          description: Document not found
+          description: Документа не существует
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     put:
-      summary: Rename document
+      summary: Переименовать документ
       tags: [Documents]
       requestBody:
         required: true
@@ -92,7 +92,7 @@ paths:
               $ref: '#/components/schemas/UpdateDocumentRequest'
       responses:
         '200':
-          description: Document updated
+          description: Документ обновлен
           content:
             application/json:
               schema:
@@ -104,23 +104,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Document not found
+          description: Документа не существует
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     delete:
-      summary: Delete document
+      summary: Удаление документа
       tags: [Documents]
       responses:
         '200':
-          description: Document deleted
+          description: Документ удален
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/MessageResponse'
         '404':
-          description: Document not found
+          description: Документа не существует
           content:
             application/json:
               schema:
